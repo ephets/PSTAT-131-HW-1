@@ -9,35 +9,66 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, include=FALSE, echo=FALSE}
 library(tidyverse)
 library(tidymodels)
 library(ISLR)
-data(Auto)
+```
 
-Auto = as_tibble(Auto)
-filter(Auto,mpg>=15, displacement >= 300)
-select(Auto, mpg, displacement)
+**Question 1: Define supervised versus unsupervised learning. What are the difference(s) between them?**
 
+Supervised learning involves systems that predict an outcome variable from given predictor variables, while unsupervised learning involves only the predictor variables (inputs) without any "supervising" outcome or outputs. In other words, in a supervised learning problem, every observation of predictor values has a corresponding response value. In an unsupervised problem, there is no outcome associated with an observation of the predictors, and instead the data is used to determine relationships between the predictors and/or different observations. 
+
+
+**Question 2: Explain the difference between a regression model and a classification model, specifically in the context of machine learning.**
+
+Regression models are generally those in which the response variable is quantitative, while classification models have qualitative (or categorical) response variables. These restrictions are not rigid, however, as certain types of regression problems (for example, logistic regression) use binary qualitative response values. 
+
+
+**Question 3: Name two commonly used metrics for regression ML problems. Name two commonly used metrics for classification ML problems. **
+
+
+RSE and R^2
+
+In regression ML problems, two commonly used metrics are the MSE (mean squared error) and the bias-variance trade-off. The MSE is calculated as the average of all the squared errors — the differences between the observed and predicted outcomes corresponding to each observation. The bias-variance trade-off is the relationship between the data's variance (the amount that the estimated model changes with a different set of training data) and bias (the error introduced when you assume a linear relationship between response and predictors).
+
+In classification problems, two common metrics are the training error rate — used to quantify the accuracy of the estimated model — and the Bayes classifier. The Bayes classifier, or the probability that the output belongs to a certain class conditional on the value of the predictor variable, is used to assign each observation to its most likely class. 
+
+
+**Question 4: Provide a brief description of each of the following purposes for which statistical models might be used:**
+
+**1. Descriptive Models **
+
+
+
+**Exploratory Data Analysis: **
+
+**Exercise 1: Create a histogram of the hwy variable, or highway miles per gallon. Describe what you see.**
+
+```{r}
+data(mpg)
+hwy <- mpg$hwy
+hist(hwy, col="blue",xlab="Highway Miles Per Gallon")
+```
+
+The histogram shows us that the distribution of variable hwy is largely within the range of 15-30 mpg, while larger or smaller observed values of the variable are infrequent. Since observed values of hwy range from 10 to 45, we can conclude that this variable has significant variance. 
+
+**Exercise 2: Create a scatterplot. Put hwy on the x-axis and cty on the y-axis. Describe what you notice. Is there a relationship between hwy and cty? What does this mean?**
+
+```{r}
+cty <- mpg$cty
+plot(mpg$hwy, mpg$cty, xlab="Highway MPG", ylab="cty")
+```
+
+The scatterplot does show a relationship between hwy and cty, since for each value of hwy, the values of cty are all quite close together(visually they are stacked on top of each other.) Looking at the graph as a whole, it is also obvious that the observed values of cty increase with larger values of hwy. 
+
+**Exercise 3: Make a bar plot of variable manufacturer, and flip it so that manufacturers are on the y-axis. Order the bars by height. Which manufacturer produced the most cars? Which produced the least?**
+
+```{r}
+manufacturer <- mpg$manufacturer
+manufacturer <- table(manufacturer) 
+manu_names <- names(manufacturer)
+barplot(manufacturer, horiz=TRUE, col=c("darkred","red","darkgreen","green", "yellow", "orange", "darkblue", "blue", "purple","magenta","black","pink","white","grey", "hotpink"), names.arg=manu_names, legend.text=TRUE, cex.names=1)
 
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
