@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(tidymodels)
 library(ISLR)
+library(ggplot2)
 ```
 
 **Question 1: Define supervised versus unsupervised learning. What are the difference(s) between them?**
@@ -27,10 +28,7 @@ Regression models are generally those in which the response variable is quantita
 
 **Question 3: Name two commonly used metrics for regression ML problems. Name two commonly used metrics for classification ML problems. **
 
-
-RSE and R^2
-
-In regression ML problems, two commonly used metrics are the MSE (mean squared error) and the bias-variance trade-off. The MSE is calculated as the average of all the squared errors — the differences between the observed and predicted outcomes corresponding to each observation. The bias-variance trade-off is the relationship between the data's variance (the amount that the estimated model changes with a different set of training data) and bias (the error introduced when you assume a linear relationship between response and predictors).
+In regression ML problems, two commonly used metrics are the RSE (residual standard error) and the $R^2$ statistic. According to page 69 of the textbook, RSE is used to approximate the standard deviation of the random error. $R^2$ is used to quantify the proportion of variance in the response Y that can be explained by the predictors, meaning the correlation between X and Y.
 
 In classification problems, two common metrics are the training error rate — used to quantify the accuracy of the estimated model — and the Bayes classifier. The Bayes classifier, or the probability that the output belongs to a certain class conditional on the value of the predictor variable, is used to assign each observation to its most likely class. 
 
@@ -39,7 +37,41 @@ In classification problems, two common metrics are the training error rate — u
 
 **1. Descriptive Models **
 
+As said in lecture 2, descriptive models are chosen in order to best visually show trends/patterns in data. A model chosen for descriptive purposes will convey a clear message about the data. 
 
+**2. Predictive Models **
+
+A predictive model attempts to calculate the most accurate and precise estimates of an output, such as predicting how sales will be affected by a change in price. These models will use a combination of the most significant features/predictors, since their goal is to attain the most accurate response estimates possible (to minimize error). 
+
+**3. Inferential Models **
+
+An inferential model seeks to demonstrate which predictors are significant and to test hypotheses about relationships between variables. The focus in such a model is how each predictor influences the output, as well as the overarching relationship between outcome and predictors.
+
+**Question 5: Predictive models are frequently used in machine learning, and they can usually be described as either mechanistic or empirically-driven.**
+
+**1. Define mechanistic. Define empirically-driven. How do these model types differ and how are they similar?**
+
+Mechanistic models assume a parametric form for the model, while empirically-driven models make no assumptions about the relationship between the outcome and the features. Empirically-driven models require more observations, and are more flexible than mechanistic ones since they make no assumptions. However, they are also overfitting by default (too specific to the training data). Mechanistic models can also become overfitting if too many parameters are added. 
+
+**2. In general, is a mechanistic or empirically-driven model easier to understand? Explain your choice.**
+
+I think a mechanistic model is easier to understand because you have made some basic assumptions about the relationship between the response and predictors (less unknown factors, also doesn't require as many observations).
+
+**3. Describe how the bias-variance trade-off is related to the use of mechanistic or empirically-driven models.**
+
+The false assumption of a linear relationship in a mechanistic model inevitably leads to higher bias, though such a model will have low variance. In a more flexible, empirically-driven model, there will be much higher variance and lower bias. 
+
+**Question 6: A political candidate’s campaign has collected some detailed voter history data from their constituents. The campaign is interested in two questions:**
+
+**1. Given a voter’s profile/data, how likely is it that they will vote in favor of the candidate?**
+
+**2. How would a voter’s likelihood of support for the candidate change if they had personal contact with the candidate?**
+
+**Classify each question as either predictive or inferential. Explain your reasoning for each.**
+
+The first question is a predictive one: the outcome being estimated is the likelihood (probability) that a voter will vote in favor of the candidate, which is predicted using features about the voter's profile and personal data. 
+
+The second question is an inferential one: what is being investigated is the relationship between a particular feature (whether or not a voter had personal contact with the candidate) and the outcome. The campaign wants to understand the correlation between these variables, and whether or not that predictor variable is significant.  
 
 **Exploratory Data Analysis: **
 
@@ -47,6 +79,7 @@ In classification problems, two common metrics are the training error rate — u
 
 ```{r}
 data(mpg)
+
 hwy <- mpg$hwy
 hist(hwy, col="blue",xlab="Highway Miles Per Gallon")
 ```
@@ -58,17 +91,49 @@ The histogram shows us that the distribution of variable hwy is largely within t
 ```{r}
 cty <- mpg$cty
 plot(mpg$hwy, mpg$cty, xlab="Highway MPG", ylab="cty")
+#Plots a scatterplot with observed mpg on the x-axis and cty on the y-axis
 ```
 
-The scatterplot does show a relationship between hwy and cty, since for each value of hwy, the values of cty are all quite close together(visually they are stacked on top of each other.) Looking at the graph as a whole, it is also obvious that the observed values of cty increase with larger values of hwy. 
+The scatterplot does show a relationship between hwy and cty, since for each value of hwy, the values of cty are all quite close together(visually they are stacked on top of each other.) Looking at the graph as a whole, it is also obvious that the observed values of cty increase with larger values of hwy; they appear to have a positive linear relationship. 
 
-**Exercise 3: Make a bar plot of variable manufacturer, and flip it so that manufacturers are on the y-axis. Order the bars by height. Which manufacturer produced the most cars? Which produced the least?**
+**Exercise 3: Make a bar plot of variable manufacturer, and flip it so that manufacturers are on the y-axis. Which manufacturer produced the most cars? Which produced the least?**
 
 ```{r}
 manufacturer <- mpg$manufacturer
 manufacturer <- table(manufacturer) 
+#creates a table of manufacturer data, so that frequency will be used as the bar height for each category of manufacturer
+
 manu_names <- names(manufacturer)
-barplot(manufacturer, horiz=TRUE, col=c("darkred","red","darkgreen","green", "yellow", "orange", "darkblue", "blue", "purple","magenta","black","pink","white","grey", "hotpink"), names.arg=manu_names, legend.text=TRUE, cex.names=1)
+#creates list of manufacturer names for graph legend
+
+barplot(manufacturer, horiz=TRUE, col=c("darkred","red","darkgreen","green", "yellow", "orange", "darkblue", "blue", "purple","magenta","black","pink","white","grey", "hotpink"), names.arg=manu_names, legend.text=TRUE)
+```
+
+From the diagram, you can see that Dodge was the manufacturer which produced the most cars, and Lincoln produced the least amount of cars. 
+
+**Exercise 4: Make a box plot of hwy, grouped by cyl. Do you see a pattern? If so, what?**
+
+```{r}
+boxplot(hwy~cyl,data=mpg, xlab="Number of Cylinders", ylab="Highway MPG", col=c("darkblue","purple","blue","pink"))
+#graphs a boxplot of hwy data (y-axis) grouped by cyl on the x-axis
 
 ```
 
+Cars with larger numbers of cylinders (cyl) appear to consistently have lower  hwy values, suggesting an inverse (negative) relationship between the two variables. 
+
+**Exercise 5: Use the corrplot package to make a lower triangle correlation matrix of the mpg dataset. **
+**Which variables are positively or negatively correlated with which others? Do these relationships make sense to you? Are there any that surprise you?**
+
+```{r}
+library(corrplot)
+
+mpg_cor<- cor(mpg[sapply(mpg,is.numeric)]) 
+#considers only numeric data for calculating correlations
+
+corrplot(mpg_cor, method='number', type='lower') 
+#plots the colored lower triangular correlation matrix
+```
+
+Confirming what we found in our scatterplot in Exercise 2, the correlation coefficient of hwy and cty is positive, meaning they are positively correlated. The variables cyl and hwy appear to be negatively correlated, which is also not surprising considering our results from Exercise 4. Since hwy and cty are positively correlated (increase together) and hwy and cyl are negatively correlated, it makes sense that cyl and cty would also be negatively correlated. Year appears to have no significant correlation with any other variables.
+
+Displ appears to be negatively correlated with both cty and hwy:  relationships which I would not have predicted.
